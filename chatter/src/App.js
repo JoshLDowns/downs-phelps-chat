@@ -18,9 +18,11 @@ class App extends React.Component {
       fetch('/db').then(res => {
         return res.json()
       }).then((data) => {
-        this.setState({
-          data: data
-        })
+        if (data !== this.state.data) {
+          this.setState({
+            data: data
+          })
+        }
       })
     }, 1000)
   }
