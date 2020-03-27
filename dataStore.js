@@ -38,7 +38,7 @@ class DataStore {
         let collection = await this.collection();
         await collection.find({}).forEach((item) => {items.push(item)});
         console.log(items)
-        this.dbClient.close();
+        //this.dbClient.close();
         return items;
     }
     //returns a specific item based on id
@@ -53,7 +53,7 @@ class DataStore {
         let collection = await this.collection();
         console.log('Inserting item...')
         await collection.insertOne(obj);
-        this.dbClient.close();
+        //this.dbClient.close();
         return console.log('Item successfully added to database')
     }
     //deletes an item from the collection based on id
