@@ -15,7 +15,6 @@ app.get('/db', getEntries)
 app.post('/post', postEntry)
 
 async function getEntries (req, res) {
-    console.log('connecting?')
     let items = await myDataBase.getAll()
     res.type('application/json').send(JSON.stringify(items))
 }
@@ -25,6 +24,7 @@ async function postEntry (req, res) {
   let date= new Date().toDateString()
   let user = req.body.user
   let content  = req.body.content
+  console.log(user, content)
   await myDataBase.insert({date:date, user:user, content:content})
   let items = await myDataBase.getAll()
   res.type('application/json').send(JSON.stringify(items))

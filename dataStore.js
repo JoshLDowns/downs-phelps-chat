@@ -37,7 +37,6 @@ class DataStore {
         let items = [];
         let collection = await this.collection();
         await collection.find({}).forEach((item) => {items.push(item)});
-        console.log(items)
         return items;
     }
     //returns a specific item based on id
