@@ -14,40 +14,36 @@ class App extends React.Component {
 
   componentDidMount() {
     console.log('mounted')
-    setInterval(() => {
-      fetch('/db').then(res => {
-        return res.json()
-      }).then((data) => {
-        if (data !== this.state.data) {
-          this.setState({
-            data: data
-          })
-        }
-      })
-    }, 1000)
+    //setInterval(() => {
+    //  fetch('/db').then(res => {
+    //    return res.json()
+    //  }).then((data) => {
+    //    if (data !== this.state.data) {
+    //      this.setState({
+    //        data: data
+    //      })
+    //    }
+    //  })
+    //}, 1000)
   }
 
   submitHandler = (event) => {
+    event.preventDefault()
     let user = this.state.user
     let content = this.state.content
-    event.preventDefault()
     let submission = { user: user, content: content }
-    let xhr = new XMLHttpRequest();
-    xhr.open('POST', '/post');
-    xhr.setRequestHeader('Content-Type', 'application/json;charset=UTF-8')
-    xhr.send(JSON.stringify(submission));
-    xhr.onreadystatechange = function (req, res) {
-      if (req.readyState === 4) {
-        if (req.status === 400) {
-          let json_data = xhr.responseText;
-          console.log(json_data);
-          res.send(json_data)
-        }
-      }
-    }
-    this.setState({
-      user: '',
-      content: ''
+    
+    fetch('/post', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(submission)
+    }).then((data)=>{
+      this.setState({
+        user: '',
+        content: ''
+      })
     })
   }
 
