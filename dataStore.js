@@ -38,14 +38,12 @@ class DataStore {
         let collection = await this.collection();
         await collection.find({}).forEach((item) => {items.push(item)});
         console.log(items)
-        //this.dbClient.close();
         return items;
     }
     //returns a specific item based on id
     async getOne(id) {
         let collection = await this.collection();
         let item = collection.findOne({_id: ObjectId(id)});
-        this.dbClient.close();
         return item;
     }
     //inserts a new item to the collection
@@ -53,28 +51,24 @@ class DataStore {
         let collection = await this.collection();
         console.log('Inserting item...')
         await collection.insertOne(obj);
-        //this.dbClient.close();
         return console.log('Item successfully added to database')
     }
     //deletes an item from the collection based on id
     async delete(id) {
         let collection = await this.collection();
         await collection.deleteOne({_id: ObjectId(id)});
-        this.dbClient.close();
         return console.log('Item successfully deleted')
     }
     //updates an item in the collection based on id and an update object
     async update(id, obj) {
         let collection = await this.collection();
         await collection.updateOne({_id: ObjectId(id)}, {$set:obj})
-        this.dbClient.close();
         return console.log('Item successfully updated')
     }
     async insertMany(doc){
         let collection = await this.collection();
         console.log('Inserting item...')
         await collection.insertMany(doc);
-        this.dbClient.close();
         return console.log('Items successfully added to database')
     }
 }

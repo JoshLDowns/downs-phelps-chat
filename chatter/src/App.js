@@ -11,11 +11,10 @@ class App extends React.Component {
       content: ''
     }
   }
-  //I'm a note!
+  
   componentDidMount() {
     console.log('mounted')
     fetch('/db').then(res => {
-      //console.log(res.clone().json())
       return res.json()
       console.log(res)
     }).then((data)=>{
@@ -24,6 +23,7 @@ class App extends React.Component {
       })
     })
   }
+
   submitHandler=(event)=>{
     let user= this.state.user
     let content= this.state.content
@@ -42,10 +42,9 @@ class App extends React.Component {
         }
       }
     }
+
     fetch('/db').then(res => {
-      //console.log(res.clone().json())
       return res.json()
-      //console.log(res)
     }).then((data)=>{
       console.log(data);
       this.setState({
@@ -53,16 +52,19 @@ class App extends React.Component {
       })
     })
   }
+
   nameChange=(event)=>{
     this.setState({
       user: event.target.value
     })
   }
+
   changeContent=(event)=>{
     this.setState({
       content: event.target.value
     })
   }
+  
   render() {
     return (
       <div id='body'>
