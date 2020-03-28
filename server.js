@@ -38,6 +38,7 @@ async function postEntry(req, res) {
   await databaseInstance.insert({ date: date, user: user, content: content })
   let items = await myDataBase.getAll()
   res.type('application/json').send(JSON.stringify(items))
+  //closin it out
   databaseInstance.dbClient.close()
 }
 

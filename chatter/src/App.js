@@ -27,7 +27,7 @@ class App extends React.Component {
         }
       })
       // I slowed the polling, too
-    }, 1000)
+    }, 2000)
   }
 
   submitHandler = (event) => {
@@ -35,7 +35,7 @@ class App extends React.Component {
     let user = this.state.user
     let content = this.state.content
     let submission = { user: user, content: content }
-    //adds query param
+    //and added the query param (server.js line16)
     fetch((`/post/${this.state.currentRoom}`), {
       method: 'POST',
       headers: {
