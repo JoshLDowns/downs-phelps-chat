@@ -15,19 +15,19 @@ class App extends React.Component {
 
   componentDidMount() {
     console.log('mounted')
-    //  setInterval(() => {
-    //   //...here as a parameter... which...(server.js, line14)
-    //   fetch(`/db/${this.state.currentRoom}`).then(res => {
-    //     return res.json()
-    //   }).then((data) => {
-    //     if (data !== this.state.data) {
-    //       this.setState({
-    //         data: data
-    //       })
-    //     }
-    //   })
-    //   // I slowed the polling, too
-    // }, 2000)
+    setInterval(() => {
+      //...here as a parameter... which...(server.js, line14)
+      fetch(`/db/${this.state.currentRoom}`).then(res => {
+        return res.json()
+      }).then((data) => {
+        if (data !== this.state.data) {
+          this.setState({
+            data: data
+          })
+        }
+      })
+      // I slowed the polling, too
+    }, 1000)
   }
 
   submitHandler = (event) => {
@@ -35,7 +35,7 @@ class App extends React.Component {
     let user = this.state.user
     let content = this.state.content
     let submission = { user: user, content: content }
-
+    //adds query param
     fetch((`/post/${this.state.currentRoom}`), {
       method: 'POST',
       headers: {
@@ -50,6 +50,11 @@ class App extends React.Component {
     })
   }
 
+  //targets post with unique id.  will fetch POST? to delete?
+  deleteHandler = (event) => {
+    console.log(event.target.id)
+  }
+
   nameChange = (event) => {
     this.setState({
       user: event.target.value
@@ -61,7 +66,7 @@ class App extends React.Component {
       content: event.target.value
     })
   }
-
+  
   render() {
     return (
       <div id='body'>
@@ -71,7 +76,8 @@ class App extends React.Component {
           <input type='submit' name='submit' />
         </form>
         <div id='text-field'>
-          {this.state.data ? this.state.data.map((info) => <p key={info._id}>{info.date}: {info.user}: {info.content}</p>) : <p>....Loading</p>}
+          {/* targeting unique posts for delete event.  targeting key didn't work for some reason*/}
+          {this.state.data ? this.state.data.map((info) => <p key={info._id} id={info._id} onClick={this.deleteHandler}>{info.date}: {info.user}: {info.content} </p>) : <p>....Loading</p>}
         </div>
 
       </div>

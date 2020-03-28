@@ -3,7 +3,7 @@ let dataTest = [{
     writer: "Chuck Palahniuk",
     year: 1999,
     actors: [
-        "Brad Pitt",
+        "Brad Pitt",    
         "Edward Norton"
     ]
 },

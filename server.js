@@ -4,7 +4,7 @@ const app = express();
 const bodyParser = require('body-parser')
 const port = process.env.PORT || 5000
 const DataStore = require('./dataStore.js')
-const dataTest = require('./test.js')
+//const dataTest = require('./test.js')
 let myDataBase = new DataStore(`mongodb+srv://paulPhelps:paulPhelps@chat-app-4tmuj.mongodb.net/test?retryWrites=true&w=majority`, 'chat', 'test')
 
 app.use(express.static(path.join(__dirname, '/chatter/build')));
@@ -16,8 +16,8 @@ app.get('/db/:room', getEntries)
 app.post('/post/:room', postEntry)
 
 async function getEntries(req, res) {
-  //which is parsed here and passed into databaseInstance
   console.log(req.params.room)
+  //which is parsed here and passed into databaseInstance
   let room = req.params.room
   let databaseInstance = new DataStore(`mongodb+srv://paulPhelps:paulPhelps@chat-app-4tmuj.mongodb.net/test?retryWrites=true&w=majority`, 'chat', `${room}`)
   let items = await databaseInstance.getAll()
@@ -32,6 +32,7 @@ async function postEntry(req, res) {
   let date = new Date().toDateString()
   let user = req.body.user
   let content = req.body.content
+  //assign room from params, passed from submit, and pass it into a different databaseInstance
   let room = req.params.room
   let databaseInstance = new DataStore(`mongodb+srv://paulPhelps:paulPhelps@chat-app-4tmuj.mongodb.net/test?retryWrites=true&w=majority`, 'chat', `${room}`)
   await databaseInstance.insert({ date: date, user: user, content: content })
