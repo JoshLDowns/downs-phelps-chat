@@ -12,11 +12,11 @@ app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
 
 //I pass to here as a query param...
-app.get('/db/:room', getEntries)
+app.post('/delete', deleteEntry)
 app.post('/post/:room', postEntry)
+app.get('/db/:room', getEntries)
 
 async function getEntries(req, res) {
-  console.log(req.params.room)
   //which is parsed here and passed into databaseInstance
   let room = req.params.room
   let databaseInstance = new DataStore(`mongodb+srv://paulPhelps:paulPhelps@chat-app-4tmuj.mongodb.net/test?retryWrites=true&w=majority`, 'chat', `${room}`)
@@ -41,6 +41,18 @@ async function postEntry(req, res) {
   let items = await myDataBase.getAll()
   res.type('application/json').send(JSON.stringify(items))
   //closin it out
+  databaseInstance.dbClient.close()
+}
+
+//mirrors the postEntry above, only difference is the method called
+async function deleteEntry(req, res) {
+  console.log('deleting comment...')
+  let room = req.body.room
+  let id = req.body.id
+  let databaseInstance = new DataStore(`mongodb+srv://paulPhelps:paulPhelps@chat-app-4tmuj.mongodb.net/test?retryWrites=true&w=majority`, 'chat', `${room}`)
+  await databaseInstance.delete(id)
+  let items = await myDataBase.getAll()
+  res.type('application/json').send(JSON.stringify(items))
   databaseInstance.dbClient.close()
 }
 

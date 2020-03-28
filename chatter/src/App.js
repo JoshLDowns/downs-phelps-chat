@@ -7,7 +7,7 @@ class App extends React.Component {
     this.state = {
       currentRoom: 'test',
       data: undefined,
-      user: '',
+      user: document.cookie.split('=')[1] || '',
       content: '',
       loggedIn: false,
       rooms: false,
@@ -19,16 +19,21 @@ class App extends React.Component {
   componentDidMount() {
     console.log('mounted')
     fetch('https://cors-anywhere.herokuapp.com/http://names.drycodes.com/10?separator=space').then(res => res.json()).then((jsonObj) => {
-      console.log(jsonObj[0])
-      this.setState({
-        user: jsonObj[0]
-      })
+      if (this.state.user === '') {
+        this.setState({
+          user: jsonObj[0]
+        })
+      }
     })
     let newInterval = setInterval(() => {
-      //...here as a parameter... which...(server.js, line14)
       fetch(`/db/${this.state.currentRoom}`).then(res => {
         return res.json()
       }).then((data) => {
+        //HERE'S THE PROBLEM (I think?) State is set every time, no matter what.   Whatever it is, 
+        //it's triggering an update with the polling.  Not even a big deal, but scroll up on messages and 
+        //you'll see what I'm talking about.  
+        //this conditional logs true no matter what.  Might need to access prevState somehow, like I tried in 
+        //componentDidUpdate?  Idk, I'll think about it.  
         if (data !== this.state.data) {
           this.setState({
             data: data
@@ -37,14 +42,18 @@ class App extends React.Component {
       })
       // I slowed the polling, too
     }, 2000)
-    this.scrollToBottom();
+    //this.scrollToBottom();
     this.setState({
       interval: newInterval
     })
   }
   //calls scroll function on update -jd
-  componentDidUpdate() {
-    this.scrollToBottom();
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState.data !== this.state.data) {
+      this.scrollToBottom()
+    } else
+      console.log("I'm updating! Updating all the time!")
+    //this.scrollToBottom();
   }
 
   componentWillUnmount() {
@@ -77,7 +86,19 @@ class App extends React.Component {
 
   //targets post with unique id.  will fetch POST? to delete?
   deleteHandler = (event) => {
-    console.log(event.target.id)
+    console.log('id:' + event.target.id)
+    let id = event.target.id
+    let room = this.state.currentRoom
+    let submission = { id: id, room: room }
+    console.log(submission)
+    fetch((`/delete`), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(submission)
+    })
+
   }
 
   nameChange = (event) => {
@@ -99,14 +120,16 @@ class App extends React.Component {
       this.setState({
         user: jsonObj[0]
       })
+      document.cookie = `user=${jsonObj[0]}`
     })
   }
 
   //toggles boolean for logged in to render the modal window -jd
   logInHandler = () => {
     this.setState({
-      loggedIn: true
+      loggedIn: true,
     })
+    console.log(document.cookie)
   }
 
   //toggles boolean for rooms to render the modal window -jd
@@ -132,7 +155,7 @@ class App extends React.Component {
         }
       })
       // I slowed the polling, too
-    }, 2000) 
+    }, 2000)
     this.setState({
       currentRoom: event.target.id,
       rooms: false,
@@ -154,7 +177,7 @@ class App extends React.Component {
                   <p className='input-name'>{info.user}</p>
                   <p className='input-text'>{info.content}</p>
                   <div className='input-footer'>
-                    {info.user === this.state.user && <button className='delete-chat' id={info._id} onClick={this.deleteHandler}>delete?</button>}
+                    {info.user === this.state.user && <button className='delete-chat' id={info._id} onClick={this.deleteHandler}>delete</button>}
                     <p className='input-date'>{info.date}</p>
                   </div>
                 </div>
@@ -221,7 +244,6 @@ function ChatRoomModal(props) {
 function LogOut(props) {
   return (
     <div id='log-out-modal'>
-
     </div>
   )
 }
