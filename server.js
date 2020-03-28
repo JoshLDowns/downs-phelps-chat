@@ -30,12 +30,14 @@ async function postEntry(req, res) {
   //I do the same thing for postEntry
   console.log('entering data...')
   let date = new Date().toDateString()
+  let time = new Date().toLocaleTimeString()
+  let fullDate = `${date} @ ${time}`
   let user = req.body.user
   let content = req.body.content
   //assign room from params, passed from submit, and pass it into a different databaseInstance
   let room = req.params.room
   let databaseInstance = new DataStore(`mongodb+srv://paulPhelps:paulPhelps@chat-app-4tmuj.mongodb.net/test?retryWrites=true&w=majority`, 'chat', `${room}`)
-  await databaseInstance.insert({ date: date, user: user, content: content })
+  await databaseInstance.insert({ date: fullDate, user: user, content: content })
   let items = await myDataBase.getAll()
   res.type('application/json').send(JSON.stringify(items))
   //closin it out
