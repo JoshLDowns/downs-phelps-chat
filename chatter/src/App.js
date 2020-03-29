@@ -5,7 +5,7 @@ class App extends React.Component {
   constructor() {
     super()
     this.state = {
-      currentRoom: 'test',
+      currentRoom: 'general',
       data: [],
       user: document.cookie.split('=')[1] || '',
       content: '',
@@ -13,7 +13,8 @@ class App extends React.Component {
       rooms: false,
       loggedOut: false,
       interval: undefined,
-      needToScroll: false
+      needToScroll: false,
+      chatButton: true
     }
   }
 
@@ -26,25 +27,6 @@ class App extends React.Component {
           user: jsonObj[0]
         })
       }
-    })
-    let newInterval = setInterval(() => {
-      fetch(`/db/${this.state.currentRoom}`).then(res => {
-        return res.json()
-      }).then((data) => {
-        //fixed the problem by setting a need to scroll value only if the data will be updated, and only if the client before the update was at the bottom of the div
-        if (data.length !== this.state.data.length) {
-          let bottom = this.scrollable.scrollHeight - this.scrollable.scrollTop === this.scrollable.clientHeight
-          this.setState({
-            data: data,
-            needToScroll: bottom
-          })
-        }
-
-      })
-    }, 1000)
-    this.scrollToBottom();
-    this.setState({
-      interval: newInterval
     })
   }
 
@@ -66,6 +48,7 @@ class App extends React.Component {
   scrollToBottom = () => {
     this.scrollBottom.scrollIntoView({ behavior: "smooth" });
   }
+
 
   //handles form submit
   submitHandler = (event) => {
@@ -100,16 +83,10 @@ class App extends React.Component {
       },
       body: JSON.stringify(submission)
     })
-
-  }
-
-  nameChange = (event) => {
-    this.setState({
-      user: event.target.value
-    })
   }
 
   changeContent = (event) => {
+    event.target.value !== '' ? this.setState({ chatButton: false }) : this.setState({ chatButton: true })
     this.setState({
       content: event.target.value
     })
@@ -128,10 +105,40 @@ class App extends React.Component {
 
   //toggles boolean for logged in to render the modal window -jd
   logInHandler = () => {
+    let newInterval = setInterval(() => {
+      fetch(`/db/${this.state.currentRoom}`).then(res => {
+        return res.json()
+      }).then((data) => {
+        //fixed the problem by setting a need to scroll value only if the data will be updated, and only if the client before the update was at the bottom of the div
+        let bottom = Math.ceil(this.scrollable.scrollHeight - this.scrollable.scrollTop) === this.scrollable.clientHeight
+        if (data.length !== this.state.data.length) {
+          console.log(bottom)
+          this.setState({
+            data: data,
+            needToScroll: bottom,
+            messageNotification: !bottom
+          })
+        }
+        if (bottom && this.state.messageNotification) {
+          this.setState({
+            messageNotification: false
+          })
+        }
+      })
+    }, 1000)
     this.setState({
-      loggedIn: true,
+      interval: newInterval,
+      loggedIn: true
     })
-    console.log(document.cookie)
+  }
+
+  logOutHandler = () => {
+    this.setState({
+      loggedIn: false,
+    })
+    //erases cookies by adding expiration date to them (if logging out)
+    document.cookie.split(";").forEach(function (c) { document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); });
+    clearInterval(this.state.interval)
   }
 
   //toggles boolean for rooms to render the modal window -jd
@@ -150,11 +157,19 @@ class App extends React.Component {
       fetch(`/db/${newRoom}`).then(res => {
         return res.json()
       }).then((data) => {
+        //fixed the problem by setting a need to scroll value only if the data will be updated, and only if the client before the update was at the bottom of the div
+        let bottom = Math.ceil(this.scrollable.scrollHeight - this.scrollable.scrollTop) === this.scrollable.clientHeight
         if (data.length !== this.state.data.length) {
-          let bottom = this.scrollable.scrollHeight - this.scrollable.scrollTop === this.scrollable.clientHeight
+          console.log(bottom)
           this.setState({
             data: data,
-            needToScroll: bottom
+            needToScroll: bottom,
+            messageNotification: !bottom
+          })
+        }
+        if (bottom && this.state.messageNotification) {
+          this.setState({
+            messageNotification: false
           })
         }
       })
@@ -173,6 +188,7 @@ class App extends React.Component {
           {this.state.loggedIn === false && <LogIn user={this.state.user} randomizeName={this.randomizeName} logInHandler={this.logInHandler} />}
           {this.state.rooms === true && <ChatRoomModal chatRoomHandler={this.chatRoomHandler} />}
           <div id='text-field'>
+            {this.state.messageNotification && <Notification scrollToBottom={this.scrollToBottom}/>}
             <div id='text-scroll' ref={(element) => { this.scrollable = element }} >
               {/* targeting unique posts for delete event.  targeting key didn't work for some reason*/}
               {this.state.data ? this.state.data.map((info) => (
@@ -190,11 +206,11 @@ class App extends React.Component {
           </div>
           <form id='chat-input' onSubmit={this.submitHandler}>
             <input name='content' type='text' id='content-input' onChange={this.changeContent} value={this.state.content} />
-            <input type='submit' name='submit' className='button' value='CHAT' />
+            <input type='submit' name='submit' className='button' value='CHAT' disabled={this.state.chatButton} />
           </form>
           <div id='control-buttons'>
             <button id='chat-room-toggle' className='button' onClick={this.chatModalHandler}>ROOMS</button>
-            <button id='logout-toggle' className='button' >LOG OUT</button>
+            <button id='logout-toggle' className='button' onClick={this.logOutHandler}>LOG OUT</button>
           </div>
         </div>
       </div>
@@ -223,7 +239,7 @@ function LogIn(props) {
 function ChatRoomModal(props) {
   return (
     <div id='chat-room-modal'>
-      <div id='test' className='chat-room-selector' onClick={props.chatRoomHandler}>
+      <div id='general' className='chat-room-selector' onClick={props.chatRoomHandler}>
         <h1 className='room-title'>#General_Chat</h1>
         <p className='room-descrip'>A space to talk about whatever</p>
       </div>
@@ -243,12 +259,14 @@ function ChatRoomModal(props) {
   )
 }
 
-//still need to write
-function LogOut(props) {
+
+function Notification(props) {
   return (
-    <div id='log-out-modal'>
+    <div id="notification">
+      <h3 onClick={props.scrollToBottom} >New messages!</h3>
     </div>
   )
 }
+
 
 export default App;

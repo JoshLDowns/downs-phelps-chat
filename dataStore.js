@@ -1,4 +1,4 @@
-    const MongoClient = require('mongodb').MongoClient
+const MongoClient = require('mongodb').MongoClient
 const ObjectId = require('mongodb').ObjectId
 
 class DataStore {
@@ -36,13 +36,13 @@ class DataStore {
     async getAll() {
         let items = [];
         let collection = await this.collection();
-        await collection.find({}).forEach((item) => {items.push(item)});
-        return items;
+        await collection.find({}).sort({ $natural: -1 }).limit(100).forEach((item) => { items.push(item) });
+        return items.reverse();
     }
     //returns a specific item based on id
     async getOne(id) {
         let collection = await this.collection();
-        let item = collection.findOne({_id: ObjectId(id)});
+        let item = collection.findOne({ _id: ObjectId(id) });
         return item;
     }
     //inserts a new item to the collection
@@ -55,16 +55,16 @@ class DataStore {
     //deletes an item from the collection based on id
     async delete(id) {
         let collection = await this.collection();
-        await collection.deleteOne({_id: ObjectId(id)});
+        await collection.deleteOne({ _id: ObjectId(id) });
         return console.log('Item successfully deleted')
     }
     //updates an item in the collection based on id and an update object
     async update(id, obj) {
         let collection = await this.collection();
-        await collection.updateOne({_id: ObjectId(id)}, {$set:obj})
+        await collection.updateOne({ _id: ObjectId(id) }, { $set: obj })
         return console.log('Item successfully updated')
     }
-    async insertMany(doc){
+    async insertMany(doc) {
         let collection = await this.collection();
         console.log('Inserting item...')
         await collection.insertMany(doc);
@@ -72,4 +72,4 @@ class DataStore {
     }
 }
 
-module.exports= DataStore
+module.exports = DataStore
