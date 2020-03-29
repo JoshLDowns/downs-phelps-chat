@@ -251,7 +251,7 @@ function ChatRoomModal(props) {
         <h1 className='room-title'>#Code-Chat</h1>
         <p className='room-descrip'>A space to talk about coding #learnEveryDay</p>
       </div>
-      <div id='design' className='chat-room-selector' onClick={props.chatRoomHandler}>
+      <div id='designed' className='chat-room-selector' onClick={props.chatRoomHandler}>
         <h1 className='room-title'>#Design-Chat</h1>
         <p className='room-descrip'>A space to vent about CSS... and talk about design and stuff</p>
       </div>
