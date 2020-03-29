@@ -6,13 +6,14 @@ class App extends React.Component {
     super()
     this.state = {
       currentRoom: 'test',
-      data: undefined,
+      data: [],
       user: document.cookie.split('=')[1] || '',
       content: '',
       loggedIn: false,
       rooms: false,
       loggedOut: false,
-      interval: undefined
+      interval: undefined,
+      needToScroll: false
     }
   }
 
@@ -20,6 +21,7 @@ class App extends React.Component {
     console.log('mounted')
     fetch('https://cors-anywhere.herokuapp.com/http://names.drycodes.com/10?separator=space').then(res => res.json()).then((jsonObj) => {
       if (this.state.user === '') {
+        document.cookie = `user=${jsonObj[0]}`
         this.setState({
           user: jsonObj[0]
         })
@@ -29,31 +31,31 @@ class App extends React.Component {
       fetch(`/db/${this.state.currentRoom}`).then(res => {
         return res.json()
       }).then((data) => {
-        //HERE'S THE PROBLEM (I think?) State is set every time, no matter what.   Whatever it is, 
-        //it's triggering an update with the polling.  Not even a big deal, but scroll up on messages and 
-        //you'll see what I'm talking about.  
-        //this conditional logs true no matter what.  Might need to access prevState somehow, like I tried in 
-        //componentDidUpdate?  Idk, I'll think about it.  
-        if (data !== this.state.data) {
+        //fixed the problem by setting a need to scroll value only if the data will be updated, and only if the client before the update was at the bottom of the div
+        if (data.length !== this.state.data.length) {
+          let bottom = this.scrollable.scrollHeight - this.scrollable.scrollTop === this.scrollable.clientHeight
           this.setState({
-            data: data
+            data: data,
+            needToScroll: bottom
           })
         }
+
       })
-      // I slowed the polling, too
-    }, 2000)
-    //this.scrollToBottom();
+    }, 1000)
+    this.scrollToBottom();
     this.setState({
       interval: newInterval
     })
   }
-  //calls scroll function on update -jd
-  componentDidUpdate(prevProps, prevState) {
-    if (prevState.data !== this.state.data) {
+
+  //calls scroll function on update if needed-jd
+  componentDidUpdate() {
+    if (this.state.needToScroll) {
       this.scrollToBottom()
-    } else
-      console.log("I'm updating! Updating all the time!")
-    //this.scrollToBottom();
+      this.setState({
+        needToScroll: false
+      })
+    }
   }
 
   componentWillUnmount() {
@@ -148,14 +150,15 @@ class App extends React.Component {
       fetch(`/db/${newRoom}`).then(res => {
         return res.json()
       }).then((data) => {
-        if (data !== this.state.data) {
+        if (data.length !== this.state.data.length) {
+          let bottom = this.scrollable.scrollHeight - this.scrollable.scrollTop === this.scrollable.clientHeight
           this.setState({
-            data: data
+            data: data,
+            needToScroll: bottom
           })
         }
       })
-      // I slowed the polling, too
-    }, 2000)
+    }, 1000)
     this.setState({
       currentRoom: event.target.id,
       rooms: false,
@@ -170,7 +173,7 @@ class App extends React.Component {
           {this.state.loggedIn === false && <LogIn user={this.state.user} randomizeName={this.randomizeName} logInHandler={this.logInHandler} />}
           {this.state.rooms === true && <ChatRoomModal chatRoomHandler={this.chatRoomHandler} />}
           <div id='text-field'>
-            <div id='text-scroll'>
+            <div id='text-scroll' ref={(element) => { this.scrollable = element }} >
               {/* targeting unique posts for delete event.  targeting key didn't work for some reason*/}
               {this.state.data ? this.state.data.map((info) => (
                 <div key={info._id} className={info.user === this.state.user ? 'text-user' : 'text-non-user'}>
