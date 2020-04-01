@@ -53,9 +53,11 @@ class App extends React.Component {
   //handles form submit
   submitHandler = (event) => {
     event.preventDefault()
+    let date = new Date().toDateString()
+    let time = new Date().toLocaleTimeString()
     let user = this.state.user
     let content = this.state.content
-    let submission = { user: user, content: content }
+    let submission = { date: date, time: time, user: user, content: content }
     //and added the query param (server.js line16)
     fetch((`/post/${this.state.currentRoom}`), {
       method: 'POST',

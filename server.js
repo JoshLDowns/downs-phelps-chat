@@ -29,8 +29,8 @@ async function getEntries(req, res) {
 async function postEntry(req, res) {
   //I do the same thing for postEntry
   console.log('entering data...')
-  let date = new Date().toDateString()
-  let time = new Date().toLocaleTimeString()
+  let date = req.body.date
+  let time = req.body.time
   let fullDate = `${date} @ ${time}`
   let user = req.body.user
   let content = req.body.content
